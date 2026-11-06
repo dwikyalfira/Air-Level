@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="complication_label">AQI</string>
+
+    <string name="cat_good">Baik</string>
+    <string name="cat_moderate">Sedang</string>
+    <string name="cat_usg">Tidak sehat bagi kelompok sensitif</string>
+    <string name="cat_unhealthy">Tidak sehat</string>
+    <string name="cat_very_unhealthy">Sangat tidak sehat</string>
+    <string name="cat_hazardous">Berbahaya</string>
+    <string name="cat_unknown">Tidak diketahui</string>
+
+    <string name="cat_short_good">Baik</string>
+    <string name="cat_short_moderate">Sedang</string>
+    <string name="cat_short_usg">Sensitif</string>
+    <string name="cat_short_unhealthy">Buruk</string>
+    <string name="cat_short_very_unhealthy">Sgt buruk</string>
+    <string name="cat_short_hazardous">Bahaya</string>
+    <string name="cat_short_unknown">—</string>
+
+    <string name="advice_good">Udara bersih — nikmati waktu di luar.</string>
+    <string name="advice_moderate">Masih wajar. Orang yang sangat sensitif sebaiknya santai.</string>
+    <string name="advice_usg">Kelompok sensitif batasi aktivitas berat di luar.</string>
+    <string name="advice_unhealthy">Semua orang bisa terdampak. Kurangi waktu di luar.</string>
+    <string name="advice_very_unhealthy">Peringatan kesehatan. Hindari aktivitas di luar.</string>
+    <string name="advice_hazardous">Kondisi darurat. Tetap di dalam ruangan.</string>
+    <string name="advice_unknown">Menunggu data.</string>
+
+    <string name="tip_exercise_ok">Waktu tepat untuk olahraga di luar</string>
+    <string name="tip_exercise_caution">Olahraga di luar masih aman</string>
+    <string name="tip_exercise_reduce">Kurangi olahraga berat di luar</string>
+    <string name="tip_exercise_avoid">Hindari olahraga di luar</string>
+    <string name="tip_exercise_indoors">Olahraga di dalam ruangan saja</string>
+    <string name="tip_mask_none">Tidak perlu masker</string>
+    <string name="tip_mask_sensitive">Kelompok sensitif: pakai masker</string>
+    <string name="tip_mask_n95">Pakai masker N95 di luar</string>
+    <string name="tip_window_open">Buka jendela untuk udara segar</string>
+    <string name="tip_window_ok">Jendela boleh dibuka</string>
+    <string name="tip_window_close">Tutup jendela</string>
+
+    <string name="weather_clear">Cerah</string>
+    <string name="weather_partly_cloudy">Cerah berawan</string>
+    <string name="weather_cloudy">Berawan</string>
+    <string name="weather_rain">Hujan</string>
+    <string name="weather_thunder">Badai petir</string>
+    <string name="weather_snow">Salju</string>
+    <string name="weather_mist">Berkabut</string>
+
+    <string name="loading">Memuat kualitas udara…</string>
+    <string name="error_title">Gagal memuat AQI</string>
+    <string name="retry">Coba lagi</string>
+    <string name="refresh">Perbarui</string>
+    <string name="refreshing">Memperbarui</string>
+    <string name="stale_warning">Data lama · %1$s</string>
+    <string name="aqi_content_description">Indeks kualitas udara %1$d, %2$s</string>
+    <string name="location_gps">Lokasi saat ini</string>
+
+    <string name="details_title">Kualitas udara</string>
+    <string name="health_title">Tips kesehatan</string>
+    <string name="pollutant_title">Polutan utama</string>
+    <string name="aqi_us_cn">AQI AS %1$d · AQI Tiongkok %2$d</string>
+    <string name="aqi_us_only">AQI AS %1$d</string>
+    <string name="weather_title">Cuaca</string>
+    <string name="humidity_wind">Kelembapan %1$d%% · Angin %2$d m/s</string>
+    <string name="measured_at">Diukur %1$s · %2$s</string>
+
+    <string name="cities_title">Kota dunia</string>
+    <string name="cities_loading">Memuat %1$d dari %2$d…</string>
+    <string name="cities_updated">Diperbarui %1$s</string>
+    <string name="your_location">Lokasi Anda</string>
+
+    <string name="settings">Pengaturan</string>
+    <string name="setting_location">Lokasi</string>
+    <string name="loc_gps">GPS</string>
+    <string name="loc_gps_desc">Paling akurat</string>
+    <string name="loc_ip">Perkiraan</string>
+    <string name="loc_ip_desc">Dari jaringan, tanpa izin</string>
+    <string name="loc_manual">Kota pilihan</string>
+    <string name="loc_manual_desc">Selalu tampilkan satu kota</string>
+    <string name="loc_permission_denied">Izin ditolak · memakai perkiraan</string>
+    <string name="choose_city">Pilih kota</string>
+    <string name="setting_refresh">Perbarui otomatis</string>
+    <string name="refresh_every">Setiap %1$d mnt</string>
+    <string name="about">Tentang</string>
+    <string name="version">Versi %1$s</string>
+    <string name="complication_hint">Pasang di watch face: tekan lama watch face → Sesuaikan → Komplikasi → Air Level</string>
+    <string name="source_measured">%1$s · diukur %2$s</string>
+    <string name="updated_ago">Diperbarui %1$s</string>
+    <string name="source_title">Sumber data</string>
+    <string name="source_station">Stasiun: %1$s</string>
+    <string name="fetched_at">Diambil %1$s · %2$s</string>
+    <string name="auto_refresh_every">Perbarui otomatis tiap %1$d mnt</string>
+    <string name="tile_description">Kualitas udara sekilas</string>
+    <string name="tile_no_data">Tap untuk membuka dan memuat kualitas udara</string>
+</resources>

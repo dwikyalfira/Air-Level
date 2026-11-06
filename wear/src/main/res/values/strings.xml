@@ -1,16 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AirWear</string>
+    <string name="app_name" translatable="false">Air Level</string>
     <string name="complication_label">AQI</string>
-    <string name="attribution">Air quality data by IQAir</string>
-    <string name="loading">Loading…</string>
-    <string name="error_generic">Couldn\'t load AQI</string>
+
+    <!-- Categories (US EPA) -->
+    <string name="cat_good">Good</string>
+    <string name="cat_moderate">Moderate</string>
+    <string name="cat_usg">Unhealthy for sensitive groups</string>
+    <string name="cat_unhealthy">Unhealthy</string>
+    <string name="cat_very_unhealthy">Very unhealthy</string>
+    <string name="cat_hazardous">Hazardous</string>
+    <string name="cat_unknown">Unknown</string>
+
+    <string name="cat_short_good">Good</string>
+    <string name="cat_short_moderate">Moderate</string>
+    <string name="cat_short_usg">Sensitive</string>
+    <string name="cat_short_unhealthy">Unhealthy</string>
+    <string name="cat_short_very_unhealthy">Very bad</string>
+    <string name="cat_short_hazardous">Hazard</string>
+    <string name="cat_short_unknown">—</string>
+
+    <string name="advice_good">Air is clean — enjoy being outside.</string>
+    <string name="advice_moderate">Acceptable. Unusually sensitive people should take it easy.</string>
+    <string name="advice_usg">Sensitive groups should limit long outdoor exertion.</string>
+    <string name="advice_unhealthy">Everyone may feel effects. Limit time outdoors.</string>
+    <string name="advice_very_unhealthy">Health alert. Avoid outdoor activity.</string>
+    <string name="advice_hazardous">Emergency conditions. Stay indoors.</string>
+    <string name="advice_unknown">Waiting for data.</string>
+
+    <!-- Health tips -->
+    <string name="tip_exercise_ok">Great time for outdoor exercise</string>
+    <string name="tip_exercise_caution">Outdoor exercise is fine</string>
+    <string name="tip_exercise_reduce">Reduce intense outdoor exercise</string>
+    <string name="tip_exercise_avoid">Avoid outdoor exercise</string>
+    <string name="tip_exercise_indoors">Exercise indoors only</string>
+    <string name="tip_mask_none">No mask needed</string>
+    <string name="tip_mask_sensitive">Sensitive groups: wear a mask</string>
+    <string name="tip_mask_n95">Wear an N95 mask outdoors</string>
+    <string name="tip_window_open">Open windows for fresh air</string>
+    <string name="tip_window_ok">Windows can stay open</string>
+    <string name="tip_window_close">Keep windows closed</string>
+
+    <!-- Weather -->
+    <string name="weather_clear">Clear</string>
+    <string name="weather_partly_cloudy">Partly cloudy</string>
+    <string name="weather_cloudy">Cloudy</string>
+    <string name="weather_rain">Rain</string>
+    <string name="weather_thunder">Thunderstorm</string>
+    <string name="weather_snow">Snow</string>
+    <string name="weather_mist">Mist</string>
+
+    <!-- Home -->
+    <string name="loading">Loading air quality…</string>
+    <string name="error_title">Couldn\'t load AQI</string>
     <string name="retry">Retry</string>
-    <string name="no_data">No air quality data</string>
-    <string name="settings_title">Settings</string>
-    <string name="location_mode_title">Location</string>
-    <string name="location_gps">GPS (recommended)</string>
-    <string name="location_ip">IP address</string>
-    <string name="refresh_title">Refresh interval</string>
-    <string name="complication_hint">Add complication: long-press watch face → Customize → Complication</string>
+    <string name="refresh">Refresh</string>
+    <string name="refreshing">Refreshing</string>
+    <string name="stale_warning">Old data · %1$s</string>
+    <string name="aqi_content_description">Air quality index %1$d, %2$s</string>
+    <string name="location_gps">Current location</string>
+
+    <!-- Details -->
+    <string name="details_title">Air quality</string>
+    <string name="health_title">Health tips</string>
+    <string name="pollutant_title">Main pollutant</string>
+    <string name="aqi_us_cn">US AQI %1$d · China AQI %2$d</string>
+    <string name="aqi_us_only">US AQI %1$d</string>
+    <string name="weather_title">Weather</string>
+    <string name="humidity_wind">Humidity %1$d%% · Wind %2$d m/s</string>
+    <string name="measured_at">Measured %1$s · %2$s</string>
+    <string name="data_by_iqair" translatable="false">Data: IQAir</string>
+
+    <!-- Cities -->
+    <string name="cities_title">World cities</string>
+    <string name="cities_loading">Loading %1$d of %2$d…</string>
+    <string name="cities_updated">Updated %1$s</string>
+    <string name="your_location">Your location</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="setting_location">Location</string>
+    <string name="loc_gps">GPS</string>
+    <string name="loc_gps_desc">Most accurate</string>
+    <string name="loc_ip">Approximate</string>
+    <string name="loc_ip_desc">From network, no permission</string>
+    <string name="loc_manual">Chosen city</string>
+    <string name="loc_manual_desc">Always show one city</string>
+    <string name="loc_permission_denied">Permission denied · using approximate</string>
+    <string name="choose_city">Choose city</string>
+    <string name="setting_refresh">Auto refresh</string>
+    <string name="refresh_every">Every %1$d min</string>
+    <string name="about">About</string>
+    <string name="version">Version %1$s</string>
+    <string name="complication_hint">Add to watch face: long-press the face → Customize → Complications → Air Level</string>
+    <!-- Data source -->
+    <string name="source_short" translatable="false">IQAir</string>
+    <string name="source_provider" translatable="false">IQAir AirVisual</string>
+    <string name="source_measured">%1$s · measured %2$s</string>
+    <string name="updated_ago">Updated %1$s</string>
+    <string name="source_title">Data source</string>
+    <string name="source_station">Station: %1$s</string>
+    <string name="fetched_at">Fetched %1$s · %2$s</string>
+    <string name="auto_refresh_every">Auto refresh every %1$d min</string>
+    <string name="tile_description">Air quality at a glance</string>
+    <string name="tile_no_data">Tap to open and load air quality</string>
 </resources>

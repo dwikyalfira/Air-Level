@@ -5,7 +5,7 @@ import com.airwear.aqi.domain.AqiSnapshot
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
-fun AirVisualResponse.toSnapshot(): AqiSnapshot {
+fun AirVisualResponse.toSnapshot(fetchedAtMs: Long = System.currentTimeMillis()): AqiSnapshot {
     val data = data ?: return AqiSnapshot.EMPTY
     val pollution = data.current?.pollution
     val weather = data.current?.weather
@@ -26,7 +26,7 @@ fun AirVisualResponse.toSnapshot(): AqiSnapshot {
 
     val stationTs = parseIsoMillis(pollution.ts)
         ?: parseIsoMillis(weather?.ts)
-        ?: System.currentTimeMillis()
+        ?: fetchedAtMs
 
     return AqiSnapshot(
         aqiUs = aqiUs,
@@ -45,7 +45,7 @@ fun AirVisualResponse.toSnapshot(): AqiSnapshot {
         pollutants = pollutants,
         // Prefer station measurement time from IQAir over fetch time
         updatedAtEpochMs = stationTs,
-        sourceFetchedAtMs = System.currentTimeMillis(),
+        sourceFetchedAtMs = fetchedAtMs,
     )
 }
 

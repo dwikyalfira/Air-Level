@@ -14,7 +14,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <uses-library
             android:name="com.google.android.wearable"
@@ -27,6 +27,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,21 +36,21 @@
         </activity>
 
         <!--
-          Official Wear OS complication data source (androidx.wear.watchface).
-          DO NOT use:
-            com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER
-            android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST
-          Those are incorrect for modern ComplicationDataSourceService and will
-          hide the provider from the watch face picker.
+          Complication data source. The action and permission below are the ones
+          the watch face picker actually queries — they match
+          ComplicationDataSourceService.ACTION_COMPLICATION_UPDATE_REQUEST in
+          androidx.wear.watchface:watchface-complications-data-source and every
+          provider registered on the watch. Any other action/permission (e.g. the
+          non-existent ...ACTION_COMPLICATION_DATA_SOURCE) hides the provider.
         -->
         <service
             android:name=".complication.AqiComplicationDataSourceService"
             android:exported="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
-            android:permission="android.permission.BIND_COMPLICATION_DATA_SOURCE">
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_DATA_SOURCE" />
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
             </intent-filter>
 
             <meta-data
@@ -59,6 +60,23 @@
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="1800" />
+        </service>
+
+        <!-- Tile: action/permission from androidx.wear.tiles.TileService. -->
+        <service
+            android:name=".tile.AqiTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            android:description="@string/tile_description"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
         </service>
     </application>
 </manifest>

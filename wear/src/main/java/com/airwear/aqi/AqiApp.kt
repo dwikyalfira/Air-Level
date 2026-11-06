@@ -2,63 +2,33 @@ package com.airwear.aqi
 
 import android.app.Application
 import android.util.Log
-import androidx.work.Configuration
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.airwear.aqi.data.AqiRepository
-import com.airwear.aqi.work.AqiRefreshWorker
-import java.util.concurrent.TimeUnit
+import com.airwear.aqi.work.RefreshScheduler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-class AqiApp : Application(), Configuration.Provider {
+class AqiApp : Application() {
 
     lateinit var repository: AqiRepository
         private set
 
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.INFO)
-            .build()
+    /** Process-wide scope for fire-and-forget work that must outlive a screen. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
         super.onCreate()
-        try {
-            WorkManager.initialize(this, workManagerConfiguration)
-            repository = AqiRepository(this)
-            scheduleRefreshAsync()
-        } catch (t: Throwable) {
-            Log.e(TAG, "App init failed", t)
-            if (!::repository.isInitialized) {
-                repository = AqiRepository(this)
-            }
-        }
-    }
+        repository = AqiRepository(this)
 
-    private val mainHandler by lazy { android.os.Handler(android.os.Looper.getMainLooper()) }
-
-    private fun scheduleRefreshAsync() {
-        mainHandler.postDelayed({
+        // WorkManager is initialised by androidx.startup — never call
+        // WorkManager.initialize() here (it throws and used to skip scheduling).
+        appScope.launch {
             runCatching {
-                val request = PeriodicWorkRequestBuilder<AqiRefreshWorker>(
-                    30, TimeUnit.MINUTES,
-                    10, TimeUnit.MINUTES,
-                )
-                    .setConstraints(
-                        Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
-                    )
-                    .build()
-
-                WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                    AqiRefreshWorker.WORK_NAME,
-                    ExistingPeriodicWorkPolicy.KEEP,
-                    request,
-                )
+                RefreshScheduler.schedule(this@AqiApp, repository.refreshMinutes.first())
             }.onFailure { Log.w(TAG, "scheduleRefresh failed", it) }
-        }, 1_500)
+        }
     }
 
     private companion object {

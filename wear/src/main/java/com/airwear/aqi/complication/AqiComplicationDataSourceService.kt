@@ -1,12 +1,11 @@
 package com.airwear.aqi.complication
 
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.data.LongTextComplicationData
+import androidx.wear.watchface.complications.data.NoDataComplicationData
 import androidx.wear.watchface.complications.data.PlainComplicationText
 import androidx.wear.watchface.complications.data.RangedValueComplicationData
 import androidx.wear.watchface.complications.data.ShortTextComplicationData
@@ -25,36 +24,34 @@ import kotlinx.coroutines.flow.first
  *  permission: android.permission.BIND_COMPLICATION_DATA_SOURCE
  *  action:     android.support.wearable.complications.ACTION_COMPLICATION_DATA_SOURCE
  *
- * getPreviewData MUST return non-null for supported types or some watch faces
- * hide this provider from the customization picker.
+ * Reads the cache only; [ComplicationUpdater] is poked whenever the
+ * repository saves a new reading.
  */
 class AqiComplicationDataSourceService : SuspendingComplicationDataSourceService() {
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
-        // Sample values shown in the watch face customize UI
+        // Sample values shown in the watch face customize UI only.
         val aqi = 54
         val category = AqiCategory.fromAqi(aqi)
-        return when (type) {
-            ComplicationType.SHORT_TEXT -> shortText(aqi, category)
-            ComplicationType.RANGED_VALUE -> rangedValue(aqi, category)
-            ComplicationType.LONG_TEXT -> longText(aqi, category, city = "Sample City")
-            else -> shortText(aqi, category)
-        }
+        return build(type, aqi, category, city = "Jakarta")
     }
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
-        // Live data when cache exists; otherwise fall back to preview so the face still draws
         val snapshot = (application as? AqiApp)?.repository?.cachedSnapshot?.first()
-        val aqi = snapshot?.aqiUs ?: 54
-        val category = snapshot?.category ?: AqiCategory.fromAqi(aqi)
-        val city = snapshot?.city
+            ?: return NoDataComplicationData()
+        return build(request.complicationType, snapshot.aqiUs, snapshot.category, snapshot.city)
+    }
 
-        return when (request.complicationType) {
-            ComplicationType.SHORT_TEXT -> shortText(aqi, category)
-            ComplicationType.RANGED_VALUE -> rangedValue(aqi, category)
-            ComplicationType.LONG_TEXT -> longText(aqi, category, city)
-            else -> shortText(aqi, category)
-        }
+    private fun build(
+        type: ComplicationType,
+        aqi: Int,
+        category: AqiCategory,
+        city: String?,
+    ): ComplicationData? = when (type) {
+        ComplicationType.SHORT_TEXT -> shortText(aqi, category)
+        ComplicationType.RANGED_VALUE -> rangedValue(aqi, category)
+        ComplicationType.LONG_TEXT -> longText(aqi, category, city)
+        else -> null
     }
 
     private fun tapPendingIntent(): PendingIntent {
@@ -69,50 +66,46 @@ class AqiComplicationDataSourceService : SuspendingComplicationDataSourceService
         )
     }
 
-    private fun launcherIcon(): Icon =
-        Icon.createWithResource(this, R.drawable.ic_launcher)
+    private fun description(aqi: Int, category: AqiCategory) =
+        PlainComplicationText.Builder(getString(R.string.aqi_content_description, aqi, getString(category.labelRes))).build()
 
     private fun shortText(aqi: Int, category: AqiCategory) =
         ShortTextComplicationData.Builder(
             text = PlainComplicationText.Builder(aqi.toString()).build(),
-            contentDescription = PlainComplicationText
-                .Builder("AQI $aqi ${category.label}")
-                .build(),
+            contentDescription = description(aqi, category),
         )
-            .setTitle(PlainComplicationText.Builder(category.shortLabel).build())
+            .setTitle(PlainComplicationText.Builder(getString(category.shortLabelRes)).build())
             .setTapAction(tapPendingIntent())
             .build()
 
-    /** AQI scale 0–500 (EPA upper bound used by many faces). */
+    /** Same 0–300 scale as the in-app ring (300+ is pinned to full). */
     private fun rangedValue(aqi: Int, category: AqiCategory) =
         RangedValueComplicationData.Builder(
-            value = aqi.coerceIn(0, 500).toFloat(),
+            value = aqi.coerceIn(0, RANGE_MAX).toFloat(),
             min = 0f,
-            max = 500f,
-            contentDescription = PlainComplicationText
-                .Builder("AQI $aqi ${category.label}")
-                .build(),
+            max = RANGE_MAX.toFloat(),
+            contentDescription = description(aqi, category),
         )
             .setText(PlainComplicationText.Builder(aqi.toString()).build())
-            .setTitle(PlainComplicationText.Builder(category.shortLabel).build())
+            .setTitle(PlainComplicationText.Builder(getString(category.shortLabelRes)).build())
             .setTapAction(tapPendingIntent())
             .build()
 
     private fun longText(aqi: Int, category: AqiCategory, city: String?): LongTextComplicationData {
         val body = buildString {
-            append("AQI $aqi · ${category.label}")
+            append("AQI $aqi · ${getString(category.labelRes)}")
             if (!city.isNullOrBlank()) append(" · $city")
         }
         return LongTextComplicationData.Builder(
             text = PlainComplicationText.Builder(body).build(),
             contentDescription = PlainComplicationText.Builder(body).build(),
         )
-            .setTitle(PlainComplicationText.Builder("AirWear").build())
+            .setTitle(PlainComplicationText.Builder(getString(R.string.app_name)).build())
             .setTapAction(tapPendingIntent())
             .build()
     }
 
-    companion object {
-        fun forceUpdateAll(@Suppress("UNUSED_PARAMETER") context: Context) = Unit
+    private companion object {
+        const val RANGE_MAX = 300
     }
 }

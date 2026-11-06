@@ -1,4 +1,4 @@
-# AirWear
+# Air Level
 
 Wear OS AQI app for Galaxy Watch7. Material 3 UI, GPS-first location, IQAir AirVisual data, watch-face complication.
 
@@ -23,17 +23,33 @@ Pick **jbr-25** (embedded) or any JDK **17–25**. Do not use system Java 8.
 
 ## Screens
 
-Swipe horizontally:
+Wear Material 3 (MD3 Expressive). Opens on Home (middle page):
 
-| Page | Content |
-|---|---|
-| 1 | AQI hero (number, category, location, weather) |
-| 2 | Details (dominant pollutant, weather, attribution) |
-| 3 | Settings (GPS/IP, refresh interval) |
+| Page | Gesture from Home | Content |
+|---|---|---|
+| World cities | swipe right | Your location + ranked world cities |
+| **Home** | — | Bezel AQI gauge, category, data source + measured time, last-fetched chip (tap to refresh) |
+| Details | swipe left | Summary, health tips, main pollutant, weather, data source, Settings |
+
+Settings (from Details): location (GPS / approximate / chosen city), auto-refresh interval, about.
+
+Design & roadmap: [design.md](design.md), [plan.md](plan.md).
+
+## Build & run on the watch
+
+```bash
+./gradlew :wear:installRelease
+```
+
+Release is signed with the local debug key for sideloading. Judge performance on release builds only — debug builds are several times slower.
+
+## Tile
+
+Swipe left from the watch face → long-press a tile → **+** → **Air Level**. Shows the gauge, AQI, source and last update; tap the pill to refresh, anywhere else to open the app.
 
 ## Complication
 
-Long-press watch face → **Customize** → **Complication** → choose **AirWear / AQI**.
+Long-press watch face → **Customize** → **Complication** → choose **Air Level**.
 
 Supported types: `SHORT_TEXT`, `RANGED_VALUE`, `LONG_TEXT`.
 

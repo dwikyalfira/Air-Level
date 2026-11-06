@@ -2,6 +2,8 @@
 
 > Diaudit 6 Nov 2026 di **Galaxy Watch7 (SM-L300, 432×432 px, ~203 dp, Wear OS / API 36)** via wireless ADB.
 > Screenshot audit: [`docs/audit/`](docs/audit/).
+>
+> **Status:** desain final yang diimplementasikan ada di **§9 Redesign MD3 Expressive** — jika berbeda dengan §4–6, §9 yang berlaku.
 
 ---
 
@@ -209,3 +211,97 @@ Gunakan token Wear M3: `displayLarge` (angka AQI), `titleMedium` (kategori), `bo
 - `contentDescription` untuk ring/ikon; angka + kategori dibaca sebagai satu kalimat ("Indeks kualitas udara 56, sedang").
 - Jangan hanya mengandalkan warna — selalu ada label kategori.
 - Uji dengan font scale 1.3× (Galaxy Watch default sering > 1.0).
+
+---
+
+## 9. Redesign MD3 Expressive (diimplementasikan)
+
+Seluruh UI dibangun ulang dengan **Wear Compose Material 3 1.6** (Material 3 Expressive untuk Wear OS). Tidak ada lagi komponen buatan sendiri untuk hal yang sudah disediakan MD3.
+
+### 9.1 Kerangka
+
+| Lapisan | Komponen MD3 | Catatan |
+|---|---|---|
+| App | `AppScaffold` | Satu `TimeText` untuk semua layar |
+| Navigasi | `SwipeDismissableNavHost` | `main` → `settings` → `settings/location` · `settings/city` · `settings/interval` |
+| Halaman utama | `HorizontalPagerScaffold` + `AnimatedPage` | 3 halaman: **Kota · Home · Detail** — app dibuka di Home (tengah); swipe kiri → Detail, swipe kanan → Kota |
+| Layar list | `ScreenScaffold` + `TransformingLazyColumn` | Morph saat scroll (`SurfaceTransformation`), rotary bawaan, scroll indicator |
+| Aksi utama | `EdgeButton` | Home: Perbarui · Error: Coba lagi |
+| List | `ListHeader`, `FilledTonalButton`, `RadioButton` | Settings memakai radio, bukan "tap untuk siklus" |
+
+Home = halaman tengah. Swipe kanan dari halaman Kota (paling kiri) menutup app. Halaman tetangga di-pre-compose; Detail kembali ke atas begitu data masuk agar tidak terbuka dalam posisi ter-scroll.
+
+### 9.2 Home (tanpa scroll) — versi ekspresif
+
+```
+        ◜     20:21     ◝          gauge bezel 0–300 (1 AQI = 1°), celah 60° di atas untuk TimeText
+      ◟   📍 Tabing       ◞        labelMedium
+             56                    numeralLarge · count-up 1,1 s (emphasized decelerate)
+         ( Moderate )              pil primaryContainer
+    IQAir · measured 7:00 PM       sumber + waktu ukur stasiun (⚠ + warna primary bila > 2 jam)
+    ( ⟳ Updated 2 min. ago )       pil kecil ±24 dp: kapan watch terakhir mengambil data · tap = refresh
+            • ○ ○                  page indicator
+```
+
+- Gauge: stroke 5 dp, 5 segmen pita EPA (track redup 22 %, terisi warna penuh sampai nilai), celah antar-segmen dihitung dari tebal stroke agar round cap tidak menyatu, penanda halo di nilai. Satu `Animatable` menggerakkan ring dan angka; ring dibaca di fase draw (tanpa rekomposisi), angka di composable terpisah.
+- Dua waktu yang berbeda ditampilkan jelas: **waktu ukur stasiun** (dari IQAir) dan **waktu diambil** (download terakhir oleh watch). Label relatif diperbarui tiap 30 detik selama layar menyala.
+- Pil status (bukan `CompactButton` — terlalu besar dan menutupi ring di 203 dp): normal (ikon refresh primary) · sedang refresh (spinner) · error (container merah + pesan). Area sentuh diperluas dengan padding tak terlihat.
+- Tidak memakai EdgeButton (menutupi page indicator) — diuji di watch.
+
+### 9.3 Detail (scroll)
+
+`ListHeader` → kartu ringkasan (`primaryContainer`) → **Tips kesehatan** (olahraga, masker, jendela; berubah per kategori) → Polutan utama → Cuaca → **Sumber data** (IQAir AirVisual, stasiun, waktu ukur, waktu diambil, interval refresh otomatis) → tombol Settings → atribusi IQAir.
+
+### 9.4 Kota
+
+`ListHeader` + status ("Memuat 3 dari 5…" / "Diperbarui 2 mnt lalu") → baris **Lokasi Anda** (disorot) → peringkat kota: pil AQI berwarna + nama + negara.
+
+### 9.4b Brand
+
+- Nama aplikasi: **Air Level** (sebelumnya AirWear). `applicationId` tetap `com.airwear.aqi` agar update menimpa app lama tanpa kehilangan data.
+- Ikon: cincin gauge 5 warna EPA dengan celah di atas + penanda nilai + tiga garis aliran udara, di atas lingkaran `#101216`. Bahasa visual sama dengan gauge di Home.
+
+### 9.4c Tile
+
+![tile](docs/tile.png)
+
+ProtoLayout (`AqiTileService`) dengan geometri gauge yang sama seperti Home (mulai jam 1, 1 AQI = 1°, celah 60° di jam 12, stroke 5 dp, 5 segmen EPA), nama stasiun, angka AQI, pil kategori, "IQAir · measured …" (⚠ bila data stasiun > 2 jam), dan pil "⟳ Updated 9:56 PM" (waktu absolut — tile tidak dirender ulang tiap menit).
+
+- Tap di mana pun → buka app. Tap pil → `LoadAction` → refresh paksa (lewat rate limiter) lalu render ulang; error tampil di pil.
+- Diperbarui otomatis setiap repository menyimpan data baru (`TileService.getUpdater`) dan minimal tiap 15 mnt (`freshnessInterval`).
+- Mode GPS di background (tile, worker) memakai **fix GPS terakhir dari foreground** (maks 24 jam) karena Android tidak memberi lokasi ke app di background tanpa izin background location; sebelumnya diam-diam jatuh ke lokasi IP (kota lain).
+
+### 9.5 Tema tonal per kategori
+
+`ColorScheme` dibuat dari palet tonal per kategori AQI (primary / primaryDim / primaryContainer / onPrimary / onPrimaryContainer). Surface netral gelap untuk OLED.
+
+| Kategori | primary | primaryContainer | onPrimaryContainer |
+|---|---|---|---|
+| Good | `#7DDC8A` | `#1E4A28` | `#B8F5C0` |
+| Moderate | `#F2D54B` | `#4A3F00` | `#FFEB99` |
+| USG | `#FFB46B` | `#5A3300` | `#FFDCBC` |
+| Unhealthy | `#FF8A80` | `#6B1A16` | `#FFDAD5` |
+| Very Unhealthy | `#D7A6FF` | `#4D2470` | `#F0DBFF` |
+| Hazardous | `#FF7FA0` | `#6E1230` | `#FFD9E1` |
+| Unknown | `#A8C7FA` | `#284777` | `#D6E3FF` |
+
+Tipografi: token Wear M3 saja (`numeralLarge`, `titleMedium`, `labelMedium`, `bodySmall`, `bodyExtraSmall`). Tidak ada `fontSize` hardcode.
+
+### 9.6 Performa (diukur di Galaxy Watch7, `dumpsys gfxinfo`, 60 Hz)
+
+| Build | Layar | Jank (deadline missed) | p50 | p99 |
+|---|---|---|---|---|
+| Debug, UI lama | Detail scroll | 23.7 % | 21 ms | 53 ms |
+| Release R8, UI lama | Detail scroll | 3.2 % | 11 ms | 24 ms |
+| Release R8, UI MD3 (baru install) | Detail scroll | 1.9 % | 19 ms | 34 ms |
+| Release R8, UI MD3 (baru install) | Kota scroll | 1.6 % | 18 ms | 22 ms |
+| Release R8, UI MD3 (baru install) | Swipe pager | 3.7 % | 18 ms | 69 ms |
+| Release R8, UI MD3 + AOT | Detail scroll | **0.5 %** | 11 ms | 19 ms |
+| Release R8, UI MD3 + AOT | Swipe pager | 3.4 % | 13 ms | 29 ms |
+
+Kesimpulan:
+1. Penyebab utama "berat" = **debug build** (tanpa R8, debuggable). Uji performa selalu dengan release.
+2. Sisa lag setelah install baru = kode belum dikompilasi AOT. Android mengompilasi sendiri di background; **baseline profile** (plan.md Fase 4) membuatnya cepat sejak install pertama.
+3. Morph MD3 menambah kerja GPU (p50 GPU 4 → 7 ms) tapi tetap dalam deadline 16.7 ms.
+
+Aturan kode: state dikumpulkan per halaman (`collectAsStateWithLifecycle`); tema hanya bergantung pada kategori AQI; pager mem-pre-compose halaman tetangga (`beyondViewportPageCount = 1`).

@@ -1,64 +1,64 @@
 package com.airwear.aqi.data.iqair
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualResponse(
-    @Json(name = "status") val status: String? = null,
-    @Json(name = "data") val data: AirVisualData? = null,
+    @SerialName("status") val status: String? = null,
+    @SerialName("data") val data: AirVisualData? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualData(
-    @Json(name = "city") val city: String? = null,
-    @Json(name = "state") val state: String? = null,
-    @Json(name = "country") val country: String? = null,
-    @Json(name = "location") val location: AirVisualLocation? = null,
-    @Json(name = "current") val current: AirVisualCurrent? = null,
+    @SerialName("city") val city: String? = null,
+    @SerialName("state") val state: String? = null,
+    @SerialName("country") val country: String? = null,
+    @SerialName("location") val location: AirVisualLocation? = null,
+    @SerialName("current") val current: AirVisualCurrent? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualLocation(
-    @Json(name = "type") val type: String? = null,
-    @Json(name = "coordinates") val coordinates: List<Double>? = null,
+    @SerialName("type") val type: String? = null,
+    @SerialName("coordinates") val coordinates: List<Double>? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualCurrent(
-    @Json(name = "weather") val weather: AirVisualWeather? = null,
-    @Json(name = "pollution") val pollution: AirVisualPollution? = null,
+    @SerialName("weather") val weather: AirVisualWeather? = null,
+    @SerialName("pollution") val pollution: AirVisualPollution? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualWeather(
-    @Json(name = "ts") val ts: String? = null,
-    @Json(name = "tp") val tp: Int? = null,
-    @Json(name = "pr") val pr: Int? = null,
-    @Json(name = "hu") val hu: Int? = null,
-    @Json(name = "ws") val ws: Double? = null,
-    @Json(name = "wd") val wd: Int? = null,
-    @Json(name = "ic") val ic: String? = null,
+    @SerialName("ts") val ts: String? = null,
+    @SerialName("tp") val tp: Int? = null,
+    @SerialName("pr") val pr: Int? = null,
+    @SerialName("hu") val hu: Int? = null,
+    @SerialName("ws") val ws: Double? = null,
+    @SerialName("wd") val wd: Int? = null,
+    @SerialName("ic") val ic: String? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualPollution(
-    @Json(name = "ts") val ts: String? = null,
-    @Json(name = "aqius") val aqius: Int? = null,
-    @Json(name = "mainus") val mainus: String? = null,
-    @Json(name = "aqicn") val aqicn: Int? = null,
-    @Json(name = "maincn") val maincn: String? = null,
-    @Json(name = "p2") val p2: AirVisualPollutant? = null,
-    @Json(name = "p1") val p1: AirVisualPollutant? = null,
-    @Json(name = "o3") val o3: AirVisualPollutant? = null,
-    @Json(name = "n2") val n2: AirVisualPollutant? = null,
-    @Json(name = "s2") val s2: AirVisualPollutant? = null,
-    @Json(name = "co") val co: AirVisualPollutant? = null,
+    @SerialName("ts") val ts: String? = null,
+    @SerialName("aqius") val aqius: Int? = null,
+    @SerialName("mainus") val mainus: String? = null,
+    @SerialName("aqicn") val aqicn: Int? = null,
+    @SerialName("maincn") val maincn: String? = null,
+    @SerialName("p2") val p2: AirVisualPollutant? = null,
+    @SerialName("p1") val p1: AirVisualPollutant? = null,
+    @SerialName("o3") val o3: AirVisualPollutant? = null,
+    @SerialName("n2") val n2: AirVisualPollutant? = null,
+    @SerialName("s2") val s2: AirVisualPollutant? = null,
+    @SerialName("co") val co: AirVisualPollutant? = null,
 )
 
-@JsonClass(generateAdapter = false)
+@Serializable
 data class AirVisualPollutant(
-    @Json(name = "concentration") val concentration: Double? = null,
-    @Json(name = "aqius") val aqius: Int? = null,
-    @Json(name = "aqicn") val aqicn: Int? = null,
+    @SerialName("conc") val concentration: Double? = null,
+    @SerialName("aqius") val aqius: Int? = null,
+    @SerialName("aqicn") val aqicn: Int? = null,
 )

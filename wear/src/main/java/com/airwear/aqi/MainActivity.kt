@@ -1,175 +1,169 @@
 package com.airwear.aqi
 
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.foundation.pager.HorizontalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
-import androidx.wear.compose.material3.MaterialTheme
-import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.AnimatedPage
+import androidx.wear.compose.material3.AppScaffold
+import androidx.wear.compose.material3.HorizontalPagerScaffold
+import androidx.wear.compose.navigation.SwipeDismissableNavHost
+import androidx.wear.compose.navigation.composable
+import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.airwear.aqi.domain.AqiUiState
 import com.airwear.aqi.ui.AqiViewModel
-import com.airwear.aqi.ui.details.DetailsScreen
-import com.airwear.aqi.ui.home.HomeScreen
-import com.airwear.aqi.ui.ranking.RankingScreen
-import com.airwear.aqi.ui.ranking.RankingUiState
+import com.airwear.aqi.ui.cities.CitiesPage
+import com.airwear.aqi.ui.details.DetailsPage
+import com.airwear.aqi.ui.home.HomePage
+import com.airwear.aqi.ui.settings.CityPickerScreen
+import com.airwear.aqi.ui.settings.IntervalScreen
+import com.airwear.aqi.ui.settings.LocationScreen
 import com.airwear.aqi.ui.settings.SettingsScreen
 import com.airwear.aqi.ui.theme.AirWearTheme
-import com.airwear.aqi.ui.theme.DefaultAccent
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private var vmRef: AqiViewModel? = null
-
-    private val locationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
-            val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-            if (granted) {
-                vmRef?.setLocationMode("GPS")
-            }
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val repository = (application as AqiApp).repository
         setContent {
-            val app = application as AqiApp
-            val vm: AqiViewModel = viewModel(factory = AqiViewModel.factory(app.repository))
-            vmRef = vm
-
-            val state by vm.uiState.collectAsState()
-            val locationMode by vm.locationMode.collectAsState()
-            val refreshMinutes by vm.refreshMinutes.collectAsState()
-            val manualCity by vm.manualCityName.collectAsState()
-
-            val accent = when (val s = state) {
-                is AqiUiState.Ready -> s.snapshot.category.color
-                is AqiUiState.Error -> s.cached?.category?.color ?: DefaultAccent
-                AqiUiState.Loading -> DefaultAccent
-            }
-
-            AirWearTheme(accent = accent) {
-                val rankingState by vm.rankingState.collectAsState()
-                WearApp(
-                    state = state,
-                    rankingState = rankingState,
-                    locationMode = locationMode,
-                    refreshMinutes = refreshMinutes,
-                    manualCity = manualCity,
-                    hasLocationPermission = vm.hasLocationPermission(),
-                    onRetry = { vm.refresh() },
-                    onRankingVisible = { vm.onRankingVisible() },
-                    onCycleLocation = {
-                        val next = when (locationMode) {
-                            "GPS" -> "IP"
-                            "IP" -> "MANUAL"
-                            else -> "GPS"
-                        }
-                        if (next == "GPS" && !vm.hasLocationPermission()) {
-                            locationPermission.launch(
-                                arrayOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                )
-                            )
-                        } else {
-                            vm.setLocationMode(next)
-                        }
-                    },
-                    onManualCity = { city, stateName, country ->
-                        vm.setManualCity(city, stateName, country)
-                    },
-                    onCycleRefresh = {
-                        val next = when (refreshMinutes) {
-                            15 -> 30
-                            30 -> 60
-                            else -> 15
-                        }
-                        vm.setRefreshMinutes(next)
-                    },
-                )
+            val vm: AqiViewModel = viewModel(factory = AqiViewModel.factory(repository))
+            // Theme depends on the AQI band only — not on every state change.
+            val category by vm.category.collectAsStateWithLifecycle()
+            AirWearTheme(category = category) {
+                AppScaffold {
+                    AirWearNavHost(vm)
+                }
             }
         }
     }
 }
 
+private object Routes {
+    const val MAIN = "main"
+    const val SETTINGS = "settings"
+    const val LOCATION = "settings/location"
+    const val CITY = "settings/city"
+    const val INTERVAL = "settings/interval"
+}
+
 @Composable
-private fun WearApp(
-    state: AqiUiState,
-    rankingState: RankingUiState,
-    locationMode: String,
-    refreshMinutes: Int,
-    manualCity: String,
-    hasLocationPermission: Boolean,
-    onRetry: () -> Unit,
-    onRankingVisible: () -> Unit,
-    onCycleLocation: () -> Unit,
-    onManualCity: (String, String, String) -> Unit,
-    onCycleRefresh: () -> Unit,
-) {
-    // Ranking ← Home → Details → Settings
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 4 })
-
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize(),
-        key = { it },
-    ) { page ->
-        when (page) {
-            0 -> {
-                LaunchedEffect(Unit) { onRankingVisible() }
-                RankingScreen(state = rankingState, modifier = Modifier.fillMaxSize())
-            }
-
-            1 -> HomeScreen(
-                state = state,
-                onOpenDetails = {},
-                onOpenSettings = {},
-                onRetry = onRetry,
-                modifier = Modifier.fillMaxSize(),
+private fun AirWearNavHost(vm: AqiViewModel) {
+    val nav = rememberSwipeDismissableNavController()
+    SwipeDismissableNavHost(navController = nav, startDestination = Routes.MAIN) {
+        composable(Routes.MAIN) {
+            MainPager(vm = vm, onOpenSettings = { nav.navigate(Routes.SETTINGS) })
+        }
+        composable(Routes.SETTINGS) {
+            val mode by vm.locationMode.collectAsStateWithLifecycle()
+            val city by vm.manualCityName.collectAsStateWithLifecycle()
+            val minutes by vm.refreshMinutes.collectAsStateWithLifecycle()
+            SettingsScreen(
+                locationMode = mode,
+                manualCity = city,
+                refreshMinutes = minutes,
+                onOpenLocation = { nav.navigate(Routes.LOCATION) },
+                onOpenInterval = { nav.navigate(Routes.INTERVAL) },
             )
-
-            2 -> {
-                val snapshot = when (state) {
-                    is AqiUiState.Ready -> state.snapshot
-                    is AqiUiState.Error -> state.cached
-                    AqiUiState.Loading -> null
-                }
-                if (snapshot != null) {
-                    DetailsScreen(snapshot = snapshot, modifier = Modifier.fillMaxSize())
-                } else {
-                    EmptyPage("No data yet")
-                }
-            }
-
-            3 -> SettingsScreen(
-                locationMode = locationMode,
-                refreshMinutes = refreshMinutes,
-                hasLocationPermission = hasLocationPermission,
-                manualCity = manualCity,
-                onLocationModeChange = { onCycleLocation() },
-                onRefreshChange = { onCycleRefresh() },
-                onManualCitySelected = onManualCity,
-                modifier = Modifier.fillMaxSize(),
+        }
+        composable(Routes.LOCATION) {
+            val mode by vm.locationMode.collectAsStateWithLifecycle()
+            LocationScreen(
+                locationMode = mode,
+                hasLocationPermission = vm::hasLocationPermission,
+                onSelect = { selected ->
+                    vm.setLocationMode(selected)
+                    nav.popBackStack()
+                },
+                onChooseCity = { nav.navigate(Routes.CITY) },
+            )
+        }
+        composable(Routes.CITY) {
+            val mode by vm.locationMode.collectAsStateWithLifecycle()
+            val city by vm.manualCityName.collectAsStateWithLifecycle()
+            CityPickerScreen(
+                selectedCity = city.takeIf { mode == "MANUAL" },
+                onSelect = { spec ->
+                    vm.setManualCity(spec.city, spec.state, spec.country)
+                    nav.popBackStack(Routes.SETTINGS, inclusive = false)
+                },
+            )
+        }
+        composable(Routes.INTERVAL) {
+            val minutes by vm.refreshMinutes.collectAsStateWithLifecycle()
+            IntervalScreen(
+                refreshMinutes = minutes,
+                onSelect = {
+                    vm.setRefreshMinutes(it)
+                    nav.popBackStack()
+                },
             )
         }
     }
 }
 
+// Home sits in the middle: World cities on the left, Details on the right.
+private const val PAGE_CITIES = 0
+private const val PAGE_HOME = 1
+private const val PAGE_DETAILS = 2
+
+/** Cities · Home · Details (starts on Home). Each page collects only the state it renders. */
 @Composable
-private fun EmptyPage(label: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(label, style = MaterialTheme.typography.labelMedium)
+private fun MainPager(vm: AqiViewModel, onOpenSettings: () -> Unit) {
+    val pagerState = rememberPagerState(initialPage = PAGE_HOME, pageCount = { 3 })
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            if (page == PAGE_CITIES) vm.onRankingVisible()
+        }
+    }
+
+    HorizontalPagerScaffold(pagerState = pagerState) {
+        // Pre-compose neighbours so swipes don't pay first-composition cost mid-gesture.
+        HorizontalPager(state = pagerState, beyondViewportPageCount = 1) { page ->
+            AnimatedPage(pageIndex = page, pagerState = pagerState) {
+                when (page) {
+                    PAGE_HOME -> {
+                        val state by vm.uiState.collectAsStateWithLifecycle()
+                        val mode by vm.locationMode.collectAsStateWithLifecycle()
+                        HomePage(
+                            state = state,
+                            isManualLocation = mode == "MANUAL",
+                            onRefresh = { vm.refresh(force = true) },
+                            onOpenDetails = { scope.launch { pagerState.animateScrollToPage(PAGE_DETAILS) } },
+                        )
+                    }
+
+                    PAGE_DETAILS -> {
+                        val state by vm.uiState.collectAsStateWithLifecycle()
+                        val minutes by vm.refreshMinutes.collectAsStateWithLifecycle()
+                        DetailsPage(
+                            snapshot = (state as? AqiUiState.Ready)?.snapshot,
+                            refreshMinutes = minutes,
+                            onOpenSettings = onOpenSettings,
+                        )
+                    }
+
+                    PAGE_CITIES -> {
+                        val ranking by vm.rankingState.collectAsStateWithLifecycle()
+                        val state by vm.uiState.collectAsStateWithLifecycle()
+                        CitiesPage(
+                            state = ranking,
+                            mine = (state as? AqiUiState.Ready)?.snapshot,
+                        )
+                    }
+                }
+            }
+        }
     }
 }

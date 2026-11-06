@@ -1,18 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Air Level: EPA-coloured gauge ring (gap at top) + air-flow lines. Generated geometry. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
     android:viewportWidth="48"
     android:viewportHeight="48">
-    <!-- Background circle -->
     <path
-        android:fillColor="#1B1B1F"
-        android:pathData="M24,24m-22,0a22,22 0,1 1,44 0a22,22 0,1 1,-44 0" />
-    <!-- AQI leaf/wind glyph -->
+        android:fillColor="#101216"
+        android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
     <path
-        android:fillColor="#00E400"
-        android:pathData="M24,10c-6,0 -10,5 -10,11 0,8 10,17 10,17s10,-9 10,-17c0,-6 -4,-11 -10,-11z" />
+        android:pathData="M32.987,10.162 A16.5,16.5 0 0,1 40.077,20.288"
+        android:strokeColor="#7DDC8A"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round" />
     <path
-        android:fillColor="#1B1B1F"
-        android:pathData="M24,16c-2.5,0 -4,2 -4,4.5 0,3.5 4,8 4,8s4,-4.5 4,-8c0,-2.5 -1.5,-4.5 -4,-4.5z" />
+        android:pathData="M40.377,21.989 A16.5,16.5 0 0,1 37.177,33.930"
+        android:strokeColor="#F2D54B"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M36.067,35.253 A16.5,16.5 0 0,1 24.864,40.477"
+        android:strokeColor="#FFB46B"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M23.136,40.477 A16.5,16.5 0 0,1 11.933,35.253"
+        android:strokeColor="#FF8A80"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M10.823,33.930 A16.5,16.5 0 0,1 15.013,10.162"
+        android:strokeColor="#D7A6FF"
+        android:strokeWidth="4.2"
+        android:strokeLineCap="round" />
+    <!-- value marker -->
+    <path
+        android:fillColor="#101216"
+        android:pathData="M40.460,22.849m-3.6,0a3.6,3.6 0,1 1,7.2 0a3.6,3.6 0,1 1,-7.2 0" />
+    <path
+        android:fillColor="#F4F5F7"
+        android:pathData="M40.460,22.849m-2.4,0a2.4,2.4 0,1 1,4.8 0a2.4,2.4 0,1 1,-4.8 0" />
+    <!-- air-flow lines -->
+    <path
+        android:pathData="M16,20.5 H27.5 a2.6,2.6 0 1 0,-2.6 -2.6"
+        android:strokeColor="#F4F5F7"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M14.5,25 H31.5"
+        android:strokeColor="#F4F5F7"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M16,29.5 H25.5 a2.6,2.6 0 1 1,-2.6 2.6"
+        android:strokeColor="#F4F5F7"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
 </vector>

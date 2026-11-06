@@ -31,6 +31,8 @@
 
 | ID | Masalah | Perbaikan |
 |---|---|---|
+| B17 ✅ | **Complication tidak pernah muncul di picker watch face**: manifest memakai action `...ACTION_COMPLICATION_DATA_SOURCE` dan permission `android.permission.BIND_COMPLICATION_DATA_SOURCE` yang tidak ada. Diganti ke `ACTION_COMPLICATION_UPDATE_REQUEST` + `com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER` (diverifikasi dari konstanta library dan `cmd package query-services` di watch). | `AndroidManifest.xml` | Selesai 6 Nov 2026 |
+| B18 ✅ | Refresh di background (worker/tile) mode GPS jatuh ke lokasi IP → kota berbeda (Tabing → Lubukbergalung). | `AqiRepository` | Simpan fix GPS terakhir dari foreground, pakai ≤ 24 jam |
 | B9 | Pager kembali ke Home setelah config change (teramati). | `rememberSaveable` posisi halaman / tangani recreate |
 | B10 | Loop ranking (5 × 14 s) jalan di `viewModelScope` walau user sudah pindah halaman; `rankStarted` tak pernah reset → tidak bisa refresh ranking. | Pindah ke WorkManager one-time / cancel saat tak terlihat; tombol refresh |
 | B11 | `hasLocationPermission()` dihitung sekali di komposisi, `vmRef` disimpan di Activity. | Flow izin di VM; `rememberLauncherForActivityResult` di Compose |
@@ -57,7 +59,15 @@
 
 ## 2. Roadmap
 
-### Fase 1 — Fondasi & bug kritis (±1–2 hari)
+### Fase 1 — Fondasi & bug kritis ✅ selesai 6 Nov 2026
+
+Dikerjakan: T1–T5 (version catalog, SDK 36, BOM 2025.08.00, Moshi → kotlinx.serialization, tooling hanya debug), B1–B8, B13–B15, plus **B16** (baru ditemukan): `WorkManager.initialize()` manual melempar `IllegalStateException` sehingga refresh periodik **tidak pernah terjadwal**. 16 unit test (`wear/src/test`).
+Terverifikasi di watch: relaunch dalam 10 mnt = 0 request; job WorkManager terdaftar dan ikut setting (60 → 15 mnt menjadwal ulang); Ranking hanya 5 kota watch list.
+Belum terverifikasi: worker periodik berjalan sendiri (WorkManager menolak force-run sebelum jadwal); tampilan complication di watch face.
+
+<details><summary>Rencana awal Fase 1</summary>
+
+
 1. git init, version catalog, bump SDK/BOM, hapus plugin tak terpakai (T1–T5).
 2. Perbaiki data layer: B4, B5, B7, B8, B13 + unit test.
 3. Complication: B1, B2, B14.
@@ -65,7 +75,17 @@
 
 **Selesai bila:** complication berubah setelah worker jalan; buka app 2× dalam 5 menit = 1 request (cek logcat OkHttp); Settings refresh mengubah jadwal (`adb shell dumpsys jobscheduler`).
 
-### Fase 2 — UI/UX redesign (±3–4 hari)
+</details>
+
+### Fase 2 — UI/UX redesign MD3 ✅ selesai 6 Nov 2026
+
+Dirombak total dengan Wear Compose Material 3 (lihat design.md §9): `AppScaffold` + `SwipeDismissableNavHost`, `HorizontalPagerScaffold` (Home · Detail · Kota) dengan page indicator, `TransformingLazyColumn` + morph, `RadioButton` di Settings, tema tonal per kategori AQI, `strings.xml` + `values-in`, B9 (`configChanges`).
+Performa: release build R8 bisa di-sideload (`installRelease`, ditandatangani debug key); **perbaikan crash release** (R8 membuang konstruktor `WorkDatabase_Impl`) dan pin Fragment 1.8.5 (lint). Hasil ukur di design.md §9.6.
+Belum: baseline profile (Fase 4), pesan error repository masih bahasa Inggris, B10–B12.
+
+<details><summary>Rencana awal Fase 2</summary>
+
+
 1. `AppScaffold` + `ScreenScaffold` + `HorizontalPageIndicator`; urutan pager **Home → Detail → Kota**; Settings ke `SwipeDismissableNavHost` (B9).
 2. Home baru: ring skala, angka besar, metadata satu baris, `EdgeButton` Refresh, state stale/offline (design.md §5.1).
 3. Detail baru: `TransformingLazyColumn`, kartu non-klik, saran kesehatan, cuaca + ikon (§5.2).
@@ -75,11 +95,13 @@
 
 **Selesai bila:** angka, kategori, dan umur data terlihat tanpa scroll di 432×432; tidak ada teks bertabrakan pada font scale 1.3×; swipe kanan dari Home menutup app.
 
+</details>
+
 ### Fase 3 — Fitur baru (±3–5 hari)
 
 | Fitur | Nilai | Catatan teknis |
 |---|---|---|
-| **Tile AQI** | Glance tanpa buka app | `androidx.wear.protolayout` + `TileService`, baca cache |
+| **Tile AQI** ✅ | Glance tanpa buka app | Selesai 6 Nov 2026 — `AqiTileService` (tiles 1.5 / protolayout 1.3), refresh dari tile, lihat design.md §9.4c |
 | **Konsentrasi polutan & prakiraan 24 jam** | Mengisi section Polutan yang sekarang kosong | IQAir Community tidak menyediakan konsentrasi/forecast → tambah **Open-Meteo Air Quality API** (gratis, tanpa key, hourly PM2.5/PM10/O₃/NO₂/SO₂/CO + `us_aqi`) sebagai sumber sekunder per koordinat |
 | **Riwayat 24 jam** | Tren naik/turun | Simpan ring buffer pembacaan di DataStore/Room; sparkline di Detail |
 | **Notifikasi ambang AQI** | Peringatan proaktif | Worker membandingkan dengan ambang; channel notifikasi; izin `POST_NOTIFICATIONS`; histeresis agar tidak spam |
@@ -89,7 +111,7 @@
 ### Fase 4 — Polish (±1 hari)
 - Animasi angka & ring, haptic saat refresh selesai.
 - Ikon launcher adaptif + monochrome.
-- Baseline profile untuk cold start (sekarang ±2,2 s di device).
+- **Baseline profile** (modul `:baselineprofile` + Macrobenchmark): uji di watch menunjukkan AOT menurunkan jank scroll 1.9 % → 0.5 % dan p99 swipe pager 69 → 29 ms. Juga mempercepat cold start (±2,2 s).
 - Uji: ambient / layar mati, tanpa internet, izin ditolak, kuota habis (429), font besar.
 
 ---
@@ -101,8 +123,10 @@ adb connect 192.168.1.6:38267
 ```
 
 ```bash
-./gradlew :wear:installDebug
+./gradlew :wear:installRelease
 ```
+
+Gunakan **release** untuk menilai performa — debug build jauh lebih lambat (jank 23.7 % vs 3.2 %).
 
 ```bash
 adb shell am start -n com.airwear.aqi/.MainActivity
