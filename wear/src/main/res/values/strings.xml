@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AirWear</string>
+    <string name="complication_label">AQI</string>
+    <string name="attribution">Air quality data by IQAir</string>
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Couldn\'t load AQI</string>
+    <string name="retry">Retry</string>
+    <string name="no_data">No air quality data</string>
+    <string name="settings_title">Settings</string>
+    <string name="location_mode_title">Location</string>
+    <string name="location_gps">GPS (recommended)</string>
+    <string name="location_ip">IP address</string>
+    <string name="refresh_title">Refresh interval</string>
+    <string name="complication_hint">Add complication: long-press watch face → Customize → Complication</string>
+</resources>

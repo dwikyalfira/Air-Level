@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#1B1B1F"
+        android:pathData="M24,24m-22,0a22,22 0,1 1,44 0a22,22 0,1 1,-44 0" />
+    <!-- AQI leaf/wind glyph -->
+    <path
+        android:fillColor="#00E400"
+        android:pathData="M24,10c-6,0 -10,5 -10,11 0,8 10,17 10,17s10,-9 10,-17c0,-6 -4,-11 -10,-11z" />
+    <path
+        android:fillColor="#1B1B1F"
+        android:pathData="M24,16c-2.5,0 -4,2 -4,4.5 0,3.5 4,8 4,8s4,-4.5 4,-8c0,-2.5 -1.5,-4.5 -4,-4.5z" />
+</vector>

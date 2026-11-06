@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Provider config for Wear complication pickers.
+  Referenced from the service meta-data.
+-->
+<androidx.wear.watchface.complications.datasource.ComplicationDataSourceService>
+    <supported-types>
+        <type>SHORT_TEXT</type>
+        <type>RANGED_VALUE</type>
+        <type>LONG_TEXT</type>
+        <type>MONOCHROMATIC_IMAGE</type>
+        <type>SMALL_IMAGE</type>
+    </supported-types>
+    <update-period-seconds>1800</update-period-seconds>
+</androidx.wear.watchface.complications.datasource.ComplicationDataSourceService>
